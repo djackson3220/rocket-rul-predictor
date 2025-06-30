@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import joblib
 
-# --- Custom Styling for School Colors (Dark Gray & Red Accents) ---
+# --- Styling (Dark Gray & Red Accents) ---
 st.markdown(
     """
     <style>
@@ -19,11 +19,11 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# App header
+# --- App Header ---
 st.title("Rocket Engine Remaining Useful Life Predictor")
 st.write("Upload up to 5 CSV or TXT files with engine sensor readings to get RUL predictions.")
 
-# Create 5 upload slots
+# --- File Uploaders ---
 cols = st.columns(5)
 uploaders = []
 for i, col in enumerate(cols, start=1):
@@ -31,24 +31,35 @@ for i, col in enumerate(cols, start=1):
         file = st.file_uploader(f"Upload file {i}", type=["csv","txt"], key=f"file{i}")
         uploaders.append(file)
 
-# Load model
+# --- Load the Model ---
 model = None
 try:
     model = joblib.load("model.pkl")
 except:
     st.warning("Model file not found. Please add 'model.pkl' to the repo.")
 
-# Helper to read space-delimited TXT or comma CSV
-def read_sensor_file(fp):
-    fname = fp.name.lower()
-    if fname.endswith(".txt"):
-        return pd.read_csv(fp, sep=r"\s+", header=None)
-    else:
-        return pd.read_csv(fp)
+# --- Column Names for C-MAPSS ---
+cmapss_cols = (
+    ["engine_id", "cycle"] +
+    [f"setting_{i}" for i in range(1, 4)] +
+    [f"sensor_{i}" for i in range(1, 22)]
+)
 
-# Process each upload
+# --- Reader Function ---
+def read_sensor_file(uploaded):
+    name = uploaded.name.lower()
+    if name.endswith(".txt"):
+        df = pd.read_csv(uploaded, sep=r"\s+", header=None)
+        df.columns = cmapss_cols
+        return df
+    else:
+        df = pd.read_csv(uploaded)
+        # If the CSV already has headers, trust them; otherwise you could assign cmapss_cols here too.
+        return df
+
+# --- Process Each Upload ---
 for idx, uploaded in enumerate(uploaders, start=1):
-    if uploaded:
+    if uploaded is not None:
         df = read_sensor_file(uploaded)
         st.subheader(f"Preview of file {idx}")
         st.dataframe(df.head())
@@ -61,7 +72,7 @@ for idx, uploaded in enumerate(uploaders, start=1):
         else:
             st.error("Cannot predict without a loaded model.")
 
-# Sidebar
+# --- Sidebar Instructions ---
 st.sidebar.header("Repository Setup & Deployment")
 st.sidebar.markdown(
     "1. Fork this repo on GitHub.\n"
