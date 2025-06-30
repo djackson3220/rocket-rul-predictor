@@ -1,4 +1,3 @@
-```python
 import streamlit as st
 import pandas as pd
 import joblib
@@ -55,8 +54,7 @@ st.markdown(
 )
 
 # App title and description
-title = "Rocket Engine Remaining Useful Life Predictor"
-st.title(title)
+st.title("Rocket Engine Remaining Useful Life Predictor")
 st.write(
     "Upload up to 5 CSV files with engine sensor readings to get a combined prediction of Remaining Useful Life (RUL)."
 )
@@ -66,9 +64,7 @@ cols = st.columns(5)
 uploaders = []
 for i, col in enumerate(cols, start=1):
     with col:
-        file = st.file_uploader(
-            f"Upload CSV {i}", type=["csv"], key=f"file{i}"
-        )
+        file = st.file_uploader(f"Upload CSV {i}", type=["csv"], key=f"file{i}")
         uploaders.append(file)
 
 # Load pre-trained model
@@ -100,4 +96,3 @@ st.sidebar.markdown(
     "3. Ensure `requirements.txt` lists all dependencies.\n"
     "4. Deploy via Streamlit Cloud or your hosting of choice."
 )
-```
