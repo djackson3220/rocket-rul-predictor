@@ -1,0 +1,39 @@
+name: Train & Commit Model
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  train_model:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v3
+      with:
+        persist-credentials: true      # allows pushing commits
+        fetch-depth: 0                # needed for full git history
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.9"
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Train the model
+      run: |
+        python train_model.py
+
+    - name: Commit updated model.pkl
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add model.pkl
+        git diff --quiet --exit-code || git commit -m "🤖 Retrained model on push to main"
+        git push
